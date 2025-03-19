@@ -1,0 +1,495 @@
+# Load libraries
+library(ggplot2)
+library(dplyr)
+
+# Load the dataset (Make sure the file path is correct)
+df <- read.csv("Axe Dataset Excel - Axe Dataset Excel.csv", stringsAsFactors = FALSE)
+
+# Check the first few rows
+head(df)
+
+# Check data structure
+str(df)
+
+
+# Initialize the Journey column
+df$Journey <- NA
+
+# Assign journey based on which column they have responses in
+df$Journey[!is.na(df$Feel_A)] <- "Control"
+df$Journey[!is.na(df$Feel_BC)] <- "Bro Code"
+df$Journey[!is.na(df$Feel_ATE)] <- "Axe The Ex"
+df$Journey[!is.na(df$Feel_EVOLVE)] <- "You’ve Evolved"
+
+# Convert Journey to a factor for analysis
+df$Journey <- factor(df$Journey, levels = c("Control", "Bro Code", "Axe The Ex", "You’ve Evolved"))
+
+# Check if the categorization worked
+table(df$Journey)  # This should show how many participants are in each group
+
+
+# ANOVA Test
+anova_feel <- aov(Feel_A ~ Journey, data = df)
+
+# View the ANOVA results
+summary(anova_feel)
+
+
+
+
+# Count non-missing values in key columns for Control
+sum(!is.na(df$Feel_A)) 
+sum(!is.na(df$Trust_A)) 
+sum(!is.na(df$Cool_A))
+sum(!is.na(df$Confidence_A))
+
+# Initialize the Journey column
+df$Journey <- NA
+
+# Assign journeys based on non-missing values in each group's relevant columns
+df$Journey[!is.na(df$Feel_A) | !is.na(df$Trust_A) | !is.na(df$Cool_A) | !is.na(df$Confidence_A)] <- "Control"
+df$Journey[!is.na(df$Feel_BC) | !is.na(df$Trust_BC) | !is.na(df$Cool_BC) | !is.na(df$Confidence_BC)] <- "Bro Code"
+df$Journey[!is.na(df$Feel_ATE) | !is.na(df$Trust_ATE) | !is.na(df$Cool_ATE) | !is.na(df$Confidence_ATE)] <- "Axe The Ex"
+df$Journey[!is.na(df$Feel_EVOLVE) | !is.na(df$Trust_EVOLVE) | !is.na(df$Cool_EVOLVE) | !is.na(df$Confidence_EVOLVE)] <- "You’ve Evolved"
+
+# Convert Journey to a factor
+df$Journey <- factor(df$Journey, levels = c("Control", "Bro Code", "Axe The Ex", "You’ve Evolved"))
+
+# Re-check the table
+table(df$Journey)
+
+
+colnames(df)
+
+# Initialize Journey as NA
+df$Journey <- NA
+
+# Assign participants to journeys based on non-missing values in their respective columns
+df$Journey[apply(df[, c("Feel_A", "Trust_A", "Cool_A", "Confidence_A")], 1, function(x) any(!is.na(x)))] <- "Control"
+df$Journey[apply(df[, c("Feel_BC", "Trust_A_BC", "Cool_A_BC", "Confidence_A_BC")], 1, function(x) any(!is.na(x)))] <- "Bro Code"
+df$Journey[apply(df[, c("Feel_ATE", "Trust_A_ATE", "Cool_A_ATE", "Confidence_A_ATE")], 1, function(x) any(!is.na(x)))] <- "Axe The Ex"
+df$Journey[apply(df[, c("Feel_EVOLVE", "Trust_A_EVOLVE", "Cool_A_EVOLVE", "Confidence_A_EVOLVE")], 1, function(x) any(!is.na(x)))] <- "You’ve Evolved"
+
+# Convert Journey into a factor
+df$Journey <- factor(df$Journey, levels = c("Control", "Bro Code", "Axe The Ex", "You’ve Evolved"))
+
+# Check if all journeys are correctly assigned
+table(df$Journey)
+
+# Count non-missing values in each journey-related column
+sapply(df[, c("Feel_A", "Feel_BC", "Feel_ATE", "Feel_EVOLVE")], function(x) sum(!is.na(x)))
+
+sum(!is.na(df$Feel_A))  # Expected ~37-38 if Control group exists
+sum(!is.na(df$Feel_BC))  # Should match Bro Code count
+sum(!is.na(df$Feel_ATE)) # Should match Axe The Ex count
+sum(!is.na(df$Feel_EVOLVE)) # Should match You’ve Evolved count
+
+
+# Initialize Journey as NA
+df$Journey <- NA
+
+# Assign journeys based on non-missing values in their respective columns
+df$Journey[!is.na(df$Feel_A) & is.na(df$Feel_BC) & is.na(df$Feel_ATE) & is.na(df$Feel_EVOLVE)] <- "Control"
+df$Journey[!is.na(df$Feel_BC) & is.na(df$Feel_A) & is.na(df$Feel_ATE) & is.na(df$Feel_EVOLVE)] <- "Bro Code"
+df$Journey[!is.na(df$Feel_ATE) & is.na(df$Feel_A) & is.na(df$Feel_BC) & is.na(df$Feel_EVOLVE)] <- "Axe The Ex"
+df$Journey[!is.na(df$Feel_EVOLVE) & is.na(df$Feel_A) & is.na(df$Feel_BC) & is.na(df$Feel_ATE)] <- "You’ve Evolved"
+
+# Convert to factor
+df$Journey <- factor(df$Journey, levels = c("Control", "Bro Code", "Axe The Ex", "You’ve Evolved"))
+
+# Check distribution
+table(df$Journey)
+
+sum(!is.na(df$Feel_A))  # Should be ~37-38
+
+df %>%
+  filter(!is.na(Feel_A) & is.na(Feel_BC) & is.na(Feel_ATE) & is.na(Feel_EVOLVE)) %>%
+  select(Participant_ID, Feel_A, Feel_BC, Feel_ATE, Feel_EVOLVE)
+
+df$Journey <- NA
+
+df$Journey[!is.na(df$Feel_A)] <- "Control"
+df$Journey[!is.na(df$Feel_BC)] <- "Bro Code"
+df$Journey[!is.na(df$Feel_ATE)] <- "Axe The Ex"
+df$Journey[!is.na(df$Feel_EVOLVE)] <- "You’ve Evolved"
+
+df$Journey <- factor(df$Journey, levels = c("Control", "Bro Code", "Axe The Ex", "You’ve Evolved"))
+
+table(df$Journey)
+
+###########
+
+# Create counts for each journey based on key variables
+df <- df %>%
+  mutate(
+    Control_count = rowSums(!is.na(select(., Feel_A, Trust_A, Cool_A, Confidence_A))),
+    BC_count      = rowSums(!is.na(select(., Feel_BC, Trust_A_BC, Cool_A_BC, Confidence_A_BC))),
+    ATE_count     = rowSums(!is.na(select(., Feel_ATE, Trust_A_ATE, Cool_A_ATE, Confidence_A_ATE))),
+    EVOLVE_count  = rowSums(!is.na(select(., Feel_EVOLVE, Trust_A_EVOLVE, Cool_A_EVOLVE, Confidence_A_EVOLVE)))
+  )
+
+# Check counts for a few rows (optional)
+head(select(df, Participant_ID, Control_count, BC_count, ATE_count, EVOLVE_count))
+
+# Assign Journey based on which count is highest
+df <- df %>%
+  mutate(Journey = case_when(
+    Control_count >= BC_count & Control_count >= ATE_count & Control_count >= EVOLVE_count ~ "Control",
+    BC_count      >= Control_count & BC_count      >= ATE_count & BC_count      >= EVOLVE_count ~ "Bro Code",
+    ATE_count     >= Control_count & ATE_count     >= BC_count      & ATE_count     >= EVOLVE_count ~ "Axe The Ex",
+    EVOLVE_count  >= Control_count & EVOLVE_count  >= BC_count      & EVOLVE_count  >= ATE_count ~ "You’ve Evolved"
+  ))
+
+# Convert Journey to a factor with desired order
+df$Journey <- factor(df$Journey, levels = c("Control", "Bro Code", "Axe The Ex", "You’ve Evolved"))
+
+# Verify the new Journey assignment
+table(df$Journey)
+
+
+
+library(dplyr)
+
+df <- df %>%
+  mutate(BrandPerception = case_when(
+    Journey == "Control" ~ rowMeans(cbind(Feel_A, Trust_A, Cool_A, Confidence_A), na.rm = TRUE),
+    Journey == "Bro Code" ~ rowMeans(cbind(Feel_BC, Trust_A_BC, Cool_A_BC, Confidence_A_BC), na.rm = TRUE),
+    Journey == "Axe The Ex" ~ rowMeans(cbind(Feel_ATE, Trust_A_ATE, Cool_A_ATE, Confidence_A_ATE), na.rm = TRUE),
+    Journey == "You’ve Evolved" ~ rowMeans(cbind(Feel_EVOLVE, Trust_A_EVOLVE, Cool_A_EVOLVE, Confidence_A_EVOLVE), na.rm = TRUE)
+  ))
+
+# Check summary of the new composite variable
+summary(df$BrandPerception)
+
+
+
+anova_BP <- aov(BrandPerception ~ Journey, data = df)
+summary(anova_BP)
+
+
+TukeyHSD(anova_BP)
+
+library(ggplot2)
+
+ggplot(df, aes(x = Journey, y = BrandPerception, fill = Journey)) +
+  geom_boxplot() +
+  labs(title = "Brand Perception by Tagline Journey",
+       x = "Journey",
+       y = "Composite Brand Perception Score") +
+  theme_minimal()
+
+
+
+#######
+
+#HYPOTHESIS2
+
+# Create composite competitor score based on Journey
+df <- df %>%
+  mutate(CompetitorScore = case_when(
+    Journey == "Control"     ~ rowMeans(cbind(Feel_OS, Trust_OS, Cool_OS, Confidence_OS), na.rm = TRUE),
+    Journey == "Bro Code"    ~ rowMeans(cbind(Feel_OS_BC, Trust_OS_BC, Cool_OS_BC, Confidence_OS_BC), na.rm = TRUE),
+    Journey == "Axe The Ex"  ~ rowMeans(cbind(Feel_OS_ATE, Trust_OS_ATE, Cool_OS_ATE, Confidence_OS_ATE), na.rm = TRUE),
+    Journey == "You’ve Evolved" ~ rowMeans(cbind(Feel_OS_EVOLVE, Trust_OS_EVOLVE, Cool_OS_EVOLVE, Confidence_OS_EVOLVE), na.rm = TRUE)
+  ))
+
+# ANOVA to test differences in competitor evaluations across journeys
+anova_competitor <- aov(CompetitorScore ~ Journey, data = df)
+summary(anova_competitor)
+
+# If significant, run post-hoc comparisons:
+TukeyHSD(anova_competitor)
+
+
+library(ggplot2)
+
+ggplot(df, aes(x = CompetitorScore, fill = Journey)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Density of Competitor Evaluation Score by Tagline Journey",
+       x = "Composite Competitor Score",
+       y = "Density") +
+  theme_minimal()
+
+
+
+########
+
+#H3
+# Assuming BrandPerception is already computed as in H1:
+# For example:
+# df <- df %>%
+#   mutate(BrandPerception = case_when(
+#     Journey == "Control"     ~ rowMeans(cbind(Feel_A, Trust_A, Cool_A, Confidence_A), na.rm = TRUE),
+#     Journey == "Bro Code"    ~ rowMeans(cbind(Feel_BC, Trust_A_BC, Cool_A_BC, Confidence_A_BC), na.rm = TRUE),
+#     Journey == "Axe The Ex"  ~ rowMeans(cbind(Feel_ATE, Trust_A_ATE, Cool_A_ATE, Confidence_A_ATE), na.rm = TRUE),
+#     Journey == "You’ve Evolved" ~ rowMeans(cbind(Feel_EVOLVE, Trust_A_EVOLVE, Cool_A_EVOLVE, Confidence_A_EVOLVE), na.rm = TRUE)
+#   ))
+
+# Run a regression with interaction between Journey and Age
+model_interaction <- lm(BrandPerception ~ Journey * Age, data = df)
+summary(model_interaction)
+
+library(ggplot2)
+
+ggplot(df, aes(x = Age, y = BrandPerception, color = Journey)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Interaction: Age and Tagline Journey on Brand Perception",
+       x = "Age",
+       y = "Composite Brand Perception") +
+  theme_minimal()
+
+
+
+##########
+
+
+# Run ANOVA to test for differences in Axe ranking across journeys
+anova_purchase <- aov(Rank_Axe ~ Journey, data = df)
+summary(anova_purchase)
+
+
+# Run Tukey's HSD test for pairwise comparisons
+TukeyHSD(anova_purchase)
+
+
+library(ggplot2)
+
+ggplot(df, aes(x = Journey, y = Rank_Axe, fill = Journey)) +
+  geom_boxplot() +
+  labs(title = "Axe Deodorant Ranking by Tagline Journey",
+       x = "Tagline Journey",
+       y = "Rank for Axe Deodorant (Proxy for Purchase Intent)") +
+  theme_minimal()
+
+
+
+
+
+library(dplyr)
+
+df <- df %>%
+  mutate(BrandPerception = case_when(
+    Journey == "Bro Code" ~ rowMeans(cbind(Feel_BC, Trust_A_BC, Cool_A_BC, Confidence_A_BC), na.rm = TRUE),
+    Journey == "Axe The Ex" ~ rowMeans(cbind(Feel_ATE, Trust_A_ATE, Cool_A_ATE, Confidence_A_ATE), na.rm = TRUE),
+    Journey == "You’ve Evolved" ~ rowMeans(cbind(Feel_EVOLVE, Trust_A_EVOLVE, Cool_A_EVOLVE, Confidence_A_EVOLVE), na.rm = TRUE)
+  ))
+
+# Check summary of the composite variable
+summary(df$BrandPerception)
+
+model_purchase <- lm(Rank_Axe ~ BrandPerception, data = df)
+summary(model_purchase)
+
+
+library(ggplot2)
+
+ggplot(df, aes(x = BrandPerception, y = Rank_Axe)) +
+  geom_point(alpha = 0.7, color = "darkblue") +
+  geom_smooth(method = "lm", se = TRUE, color = "red") +
+  labs(title = "Relationship between Brand Perception and Axe Ranking",
+       x = "Composite Brand Perception Score",
+       y = "Rank for Axe (Lower is Better)") +
+  theme_minimal()
+
+
+
+
+model_competitor <- lm(CompetitorScore ~ BrandPerception, data = df)
+summary(model_competitor)
+
+
+library(ggplot2)
+
+ggplot(df, aes(x = BrandPerception, y = CompetitorScore)) +
+  geom_point(alpha = 0.7, color = "darkblue") +
+  geom_smooth(method = "lm", se = TRUE, color = "red") +
+  labs(title = "Relationship between Brand Perception and Competitor Evaluation",
+       x = "Composite Brand Perception Score",
+       y = "Composite Competitor Evaluation Score") +
+  theme_minimal()
+
+
+
+# Compute composite Brand Perception Score based on journey
+df <- df %>%
+  mutate(BrandPerception = case_when(
+    Journey == "Control"       ~ rowMeans(cbind(Feel_A, Trust_A, Cool_A, Confidence_A), na.rm = TRUE),
+    Journey == "Bro Code"      ~ rowMeans(cbind(Feel_BC, Trust_A_BC, Cool_A_BC, Confidence_A_BC), na.rm = TRUE),
+    Journey == "Axe The Ex"    ~ rowMeans(cbind(Feel_ATE, Trust_A_ATE, Cool_A_ATE, Confidence_A_ATE), na.rm = TRUE),
+    Journey == "You’ve Evolved" ~ rowMeans(cbind(Feel_EVOLVE, Trust_A_EVOLVE, Cool_A_EVOLVE, Confidence_A_EVOLVE), na.rm = TRUE)
+  ))
+
+# Run regression: Does BrandPerception predict Rank_Axe?
+model_purchase <- lm(Rank_Axe ~ BrandPerception, data = df)
+summary(model_purchase)
+
+# Visualize the relationship
+library(ggplot2)
+ggplot(df, aes(x = BrandPerception, y = Rank_Axe)) +
+  geom_point(alpha = 0.7, color = "darkblue") +
+  geom_smooth(method = "lm", se = TRUE, color = "red") +
+  labs(title = "Relationship between Brand Perception and Axe Ranking",
+       x = "Composite Brand Perception Score",
+       y = "Rank for Axe (Lower is Better)") +
+  theme_minimal()
+
+
+
+library(dplyr)
+library(ggplot2)
+
+# Create a composite trust variable for Axe based on the journey
+df <- df %>%
+  mutate(TrustComposite = case_when(
+    Journey == "Control"       ~ Trust_A,
+    Journey == "Bro Code"      ~ Trust_A_BC,
+    Journey == "Axe The Ex"    ~ Trust_A_ATE,
+    Journey == "You’ve Evolved" ~ Trust_A_EVOLVE
+  ))
+
+# Check summary of the composite trust score
+summary(df$TrustComposite)
+
+# Run ANOVA to test if TrustComposite differs by Journey
+anova_trust <- aov(TrustComposite ~ Journey, data = df)
+summary(anova_trust)
+
+# Post-hoc comparisons if needed
+TukeyHSD(anova_trust)
+
+# Visualization: Boxplot of TrustComposite by Journey
+ggplot(df, aes(x = Journey, y = TrustComposite, fill = Journey)) +
+  geom_boxplot() +
+  labs(title = "Composite Trust for Axe by Tagline Journey",
+       x = "Tagline Journey",
+       y = "Composite Trust Score") +
+  theme_minimal()
+
+
+
+
+
+
+
+
+
+# Compute composite Brand Perception Score for Axe based on Journey
+df <- df %>%
+  mutate(BrandPerception = case_when(
+    Journey == "Control"       ~ rowMeans(cbind(Feel_A, Trust_A, Cool_A, Confidence_A), na.rm = TRUE),
+    Journey == "Bro Code"      ~ rowMeans(cbind(Feel_BC, Trust_A_BC, Cool_A_BC, Confidence_A_BC), na.rm = TRUE),
+    Journey == "Axe The Ex"    ~ rowMeans(cbind(Feel_ATE, Trust_A_ATE, Cool_A_ATE, Confidence_A_ATE), na.rm = TRUE),
+    Journey == "You’ve Evolved" ~ rowMeans(cbind(Feel_EVOLVE, Trust_A_EVOLVE, Cool_A_EVOLVE, Confidence_A_EVOLVE), na.rm = TRUE)
+  ))
+
+# Compute composite Competitor Evaluation Score for Old Spice based on Journey
+df <- df %>%
+  mutate(CompetitorScore = case_when(
+    Journey == "Control"       ~ rowMeans(cbind(Feel_OS, Trust_OS, Cool_OS, Confidence_OS), na.rm = TRUE),
+    Journey == "Bro Code"      ~ rowMeans(cbind(Feel_OS_BC, Trust_OS_BC, Cool_OS_BC, Confidence_OS_BC), na.rm = TRUE),
+    Journey == "Axe The Ex"    ~ rowMeans(cbind(Feel_OS_ATE, Trust_OS_ATE, Cool_OS_ATE, Confidence_OS_ATE), na.rm = TRUE),
+    Journey == "You’ve Evolved" ~ rowMeans(cbind(Feel_OS_EVOLVE, Trust_OS_EVOLVE, Cool_OS_EVOLVE, Confidence_OS_EVOLVE), na.rm = TRUE)
+  ))
+
+# Calculate Relative Advantage: Difference between Axe's and Old Spice's composite scores
+df <- df %>%
+  mutate(RelativeAdvantage = BrandPerception - CompetitorScore)
+
+# Check summary of Relative Advantage
+summary(df$RelativeAdvantage)
+
+# Run ANOVA to test if Relative Advantage differs by Journey
+anova_relative <- aov(RelativeAdvantage ~ Journey, data = df)
+summary(anova_relative)
+
+# Post-hoc comparisons if necessary
+TukeyHSD(anova_relative)
+
+# Visualize the differences with a boxplot
+library(ggplot2)
+ggplot(df, aes(x = Journey, y = RelativeAdvantage, fill = Journey)) +
+  geom_boxplot() +
+  labs(title = "Relative Advantage (Axe - Competitor) by Tagline Journey",
+       x = "Tagline Journey",
+       y = "Relative Advantage Score") +
+  theme_minimal()
+
+
+
+
+
+
+
+
+
+# Compute composite Brand Perception Score for Axe based on Journey
+df <- df %>%
+  mutate(BrandPerception = case_when(
+    Journey == "Control"       ~ rowMeans(cbind(Feel_A, Trust_A, Cool_A, Confidence_A), na.rm = TRUE),
+    Journey == "Bro Code"      ~ rowMeans(cbind(Feel_BC, Trust_A_BC, Cool_A_BC, Confidence_A_BC), na.rm = TRUE),
+    Journey == "Axe The Ex"    ~ rowMeans(cbind(Feel_ATE, Trust_A_ATE, Cool_A_ATE, Confidence_A_ATE), na.rm = TRUE),
+    Journey == "You’ve Evolved" ~ rowMeans(cbind(Feel_EVOLVE, Trust_A_EVOLVE, Cool_A_EVOLVE, Confidence_A_EVOLVE), na.rm = TRUE)
+  ))
+
+# Compute composite Competitor Evaluation Score for Old Spice based on Journey
+df <- df %>%
+  mutate(CompetitorScore = case_when(
+    Journey == "Control"       ~ rowMeans(cbind(Feel_OS, Trust_OS, Cool_OS, Confidence_OS), na.rm = TRUE),
+    Journey == "Bro Code"      ~ rowMeans(cbind(Feel_OS_BC, Trust_OS_BC, Cool_OS_BC, Confidence_OS_BC), na.rm = TRUE),
+    Journey == "Axe The Ex"    ~ rowMeans(cbind(Feel_OS_ATE, Trust_OS_ATE, Cool_OS_ATE, Confidence_OS_ATE), na.rm = TRUE),
+    Journey == "You’ve Evolved" ~ rowMeans(cbind(Feel_OS_EVOLVE, Trust_OS_EVOLVE, Cool_OS_EVOLVE, Confidence_OS_EVOLVE), na.rm = TRUE)
+  ))
+
+# Calculate Relative Advantage: Difference between Axe's and Old Spice's composite scores
+df <- df %>%
+  mutate(RelativeAdvantage = BrandPerception - CompetitorScore)
+
+# Check summary of Relative Advantage
+summary(df$RelativeAdvantage)
+
+# Run ANOVA to test if Relative Advantage differs by Journey
+anova_relative <- aov(RelativeAdvantage ~ Journey, data = df)
+summary(anova_relative)
+
+# Tukey HSD for pairwise comparisons
+TukeyHSD(anova_relative)
+
+# Visualization: Boxplot of Relative Advantage by Journey
+library(ggplot2)
+ggplot(df, aes(x = Journey, y = RelativeAdvantage, fill = Journey)) +
+  geom_boxplot() +
+  labs(title = "Relative Advantage of Axe vs. Competitors by Tagline Journey",
+       x = "Tagline Journey",
+       y = "Relative Advantage (BrandPerception - CompetitorScore)") +
+  theme_minimal()
+
+library(dplyr)
+library(ggplot2)
+
+# Compute summary statistics by Journey
+summary_df <- df %>%
+  group_by(Journey) %>%
+  summarise(
+    mean_rel = mean(RelativeAdvantage, na.rm = TRUE),
+    sd_rel = sd(RelativeAdvantage, na.rm = TRUE),
+    n = n(),
+    se_rel = sd_rel / sqrt(n)
+  )
+
+# Plot the bar chart with error bars
+ggplot(summary_df, aes(x = Journey, y = mean_rel, fill = Journey)) +
+  geom_bar(stat = "identity", width = 0.6, color = "black") +
+  geom_errorbar(aes(ymin = mean_rel - se_rel, ymax = mean_rel + se_rel), width = 0.2) +
+  labs(title = "Mean Relative Advantage by Tagline Journey",
+       x = "Tagline Journey",
+       y = "Mean Relative Advantage (± SE)") +
+  theme_minimal()
+
+
+ggplot(df, aes(x = Journey, y = RelativeAdvantage, fill = Journey)) +
+  geom_boxplot() +
+  labs(title = "Relative Advantage of Axe vs. Competitors by Tagline Journey",
+       x = "Tagline Journey",
+       y = "Relative Advantage (Axe - Competitor)") +
+  theme_minimal()
